@@ -7,11 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get("/project", authMiddleware, async (req, res) => {
+app.post("/project", authMiddleware, async (req, res) => {
   const { prompt } = req.body;
   const userId = req.userId;
   // add logic to get a useful name from prompt
-  const description = prompt.split("\n");
+  const description = prompt.split("\n")[0];
   const project = await prismaClient.project.create({
     data: {
       description,
@@ -34,6 +34,6 @@ app.get("/projects", async (req, res) => {
   res.json(projects);
 });
 
-app.listen(3001, () => {
-  console.log("Listening on port 3001");
+app.listen(8080, () => {
+  console.log("Listening on port 8080");
 });
