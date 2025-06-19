@@ -1,5 +1,8 @@
+import AppSidebar from "@/components/AppSidebar";
 import Prompt from "@/components/Prompt";
+import { SidebarAutoTrigger } from "@/components/SidebarAutoTrigger";
 import TemplateButtons from "@/components/TemplateButtons";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function Home() {
   return (
@@ -18,6 +21,10 @@ export default function Home() {
       <div className="max-w-2xl mx-auto pt-4">
         <TemplateButtons />
       </div>
+      <SidebarProvider defaultOpen={false}>
+        <SidebarAutoTrigger />
+        <AppSidebar />
+      </SidebarProvider>
     </div>
   );
 }

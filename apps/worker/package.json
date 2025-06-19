@@ -1,0 +1,19 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run index"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "db": "*"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "axios": "^1.10.0"
+  }
+}

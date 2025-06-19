@@ -9,6 +9,8 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ModeToggle } from "@/components/ModeToggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,23 +34,26 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <header className="flex justify-between items-center">
-            <div className="flex justify-between p-4">Bolty</div>
-            <div className="flex justify-end items-center p-4 gap-4 h-16">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </div>
-          </header>
-          {children}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <header className="flex justify-between items-center">
+              <div className="flex justify-between p-4">Bolty</div>
+              <div className="flex justify-end items-center p-4 gap-4 h-16">
+                <ModeToggle />
+                <SignedOut>
+                  <SignInButton />
+                  <SignUpButton />
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+              </div>
+            </header>
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

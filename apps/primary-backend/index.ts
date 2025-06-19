@@ -34,6 +34,6 @@ app.get("/projects", async (req, res) => {
   res.json(projects);
 });
 
-app.listen(8080, () => {
-  console.log("Listening on port 8080");
+app.listen(9090, () => {
+  console.log("Listening on port 9090");
 });

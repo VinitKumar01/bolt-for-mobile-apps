@@ -14,6 +14,7 @@ export default function Prompt() {
   return (
     <div className="flex justify-center gap-4">
       <Textarea
+        className="placeholder-[#E5E5E5]"
         placeholder="Create a chess application..."
         value={prompt}
         onChange={(e) => {
