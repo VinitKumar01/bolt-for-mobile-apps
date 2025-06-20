@@ -4,7 +4,6 @@ import { existsSync } from "fs";
 
 const BASE_WORKER_DIR = process.env.BASE_WORKER_DIR || "/tmp/bolty-worker";
 
-// Ensure base directory exists
 if (!existsSync(BASE_WORKER_DIR)) {
   await mkdir(BASE_WORKER_DIR, { recursive: true });
 }
@@ -14,7 +13,6 @@ export async function onFileUpdate(filePath: string, fileContent: string) {
     const fullPath = join(BASE_WORKER_DIR, filePath);
     const dirPath = dirname(fullPath);
 
-    // Ensure directory exists
     if (!existsSync(dirPath)) {
       await mkdir(dirPath, { recursive: true });
     }
@@ -29,7 +27,6 @@ export async function onFileUpdate(filePath: string, fileContent: string) {
 
 export function onShellCommand(shellCommand: string) {
   try {
-    // Handle compound commands with &&
     const commands = shellCommand.split("&&").map((cmd) => cmd.trim());
 
     for (const command of commands) {
@@ -37,17 +34,21 @@ export function onShellCommand(shellCommand: string) {
 
       console.log(`Running command: ${command}`);
 
-      // Parse command and arguments
       const args = command.split(" ").filter((arg) => arg.length > 0);
-      let cmd = args[0];
+      let cmd = args[0] as string;
       let cmdArgs = args.slice(1);
 
-      // Handle npm commands with better dependency resolution
       if (cmd === "npm" && cmdArgs[0] === "install") {
-        cmdArgs = ["install", "--legacy-peer-deps", "--no-audit"];
+        if (cmd === "npm" && cmdArgs[0] === "install") {
+          cmdArgs = [
+            "install",
+            "--legacy-peer-deps",
+            "--no-audit",
+            ...cmdArgs.slice(1),
+          ];
+        }
       }
 
-      // Handle expo commands by using npx
       if (cmd === "expo") {
         cmd = "npx";
         cmdArgs = ["expo", ...cmdArgs];
@@ -58,7 +59,7 @@ export function onShellCommand(shellCommand: string) {
         cwd: BASE_WORKER_DIR,
         stdout: "pipe",
         stderr: "pipe",
-        timeout: 300000, // 5 minutes timeout
+        timeout: 300000,
       });
 
       if (result.stdout) {
@@ -69,17 +70,19 @@ export function onShellCommand(shellCommand: string) {
         console.error("Error:", result.stderr.toString());
       }
 
-      // Log exit code
       if (result.exitCode !== 0) {
         console.error(
-          `Command failed with exit code ${result.exitCode}: ${command}`,
+          `Command failed with exit code ${result.exitCode}: ${command}`
         );
 
-        // For npm install failures, try alternative approaches
-        if (cmd === "npm" && cmdArgs[0] === "install") {
+        if (
+          cmd === "npm" &&
+          cmdArgs[0] === "install" &&
+          !cmdArgs.includes("--force")
+        ) {
           console.log("Trying npm install with --force flag...");
           const retryResult = Bun.spawnSync({
-            cmd: ["npm", "install", "--force"],
+            cmd: ["npm", "install", "--force", ...cmdArgs.slice(1)],
             cwd: BASE_WORKER_DIR,
             stdout: "pipe",
             stderr: "pipe",

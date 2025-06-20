@@ -7,7 +7,7 @@ export class ArtifactProcessor {
   constructor(
     currentArtifact: string,
     onFileContent: (filePath: string, fileContent: string) => void,
-    onShellCommand: (shellCommand: string) => void,
+    onShellCommand: (shellCommand: string) => void
   ) {
     this.currentArtifact = currentArtifact;
     this.onFileContent = onFileContent;
@@ -20,44 +20,37 @@ export class ArtifactProcessor {
 
   parse() {
     try {
-      // Extract content from markdown code blocks if present
       let content = this.currentArtifact;
 
-      // Check if content is wrapped in markdown code blocks
       const codeBlockMatch = content.match(
-        /```(?:xml|html)?\s*([\s\S]*?)\s*```/,
+        /```(?:xml|html)?\s*([\s\S]*?)\s*```/
       );
       if (codeBlockMatch) {
-        content = codeBlockMatch[1];
+        content = codeBlockMatch[1] as string;
       }
 
-      // Extract boltArtifact content
       const artifactMatch = content.match(
-        /<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/,
+        /<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/
       );
       if (!artifactMatch) {
         return;
       }
 
-      const artifactContent = artifactMatch[1];
+      const artifactContent = artifactMatch[1] as string;
 
-      // Find all boltActions
       const actionRegex = /<boltAction\s+([^>]*?)>([\s\S]*?)<\/boltAction>/g;
       let match;
 
       while ((match = actionRegex.exec(artifactContent)) !== null) {
-        const attributes = match[1];
-        const actionContent = match[2];
+        const attributes = match[1] as string;
+        const actionContent = match[2] as string;
 
-        // Create a unique identifier for this action
         const actionId = `${attributes}-${actionContent.substring(0, 50)}`;
 
-        // Skip if already processed
         if (this.processedActions.has(actionId)) {
           continue;
         }
 
-        // Parse attributes
         const typeMatch = attributes.match(/type=["']([^"']+)["']/);
         const filePathMatch = attributes.match(/filePath=["']([^"']+)["']/);
 
@@ -92,7 +85,6 @@ export class ArtifactProcessor {
     }
   }
 
-  // Method to reset processed actions if needed
   reset() {
     this.processedActions.clear();
     this.currentArtifact = "";

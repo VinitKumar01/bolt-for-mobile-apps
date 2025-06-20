@@ -1,5 +1,5 @@
 import cors from "cors";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import { prismaClient } from "db/client";
 import axios from "axios";
 import { systemPrompt } from "./systemPrompt";
@@ -10,14 +10,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/prompt", async (req, res) => {
+app.post("/prompt", async (req: Request, res: Response) => {
   try {
     const { prompt, projectId } = req.body;
 
     if (!prompt || !projectId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: "Missing required fields: prompt and projectId",
       });
+      return;
     }
 
     await prismaClient.prompt.create({
@@ -53,21 +54,19 @@ app.post("/prompt", async (req, res) => {
       {
         headers: { "Content-Type": "application/json" },
         timeout: 30000,
-      },
+      }
     );
 
     const generatedText = response.data.candidates[0].content.parts[0].text;
 
-    // Process with artifact processor
     let artifactProcessor = new ArtifactProcessor(
       "",
       onFileUpdate,
-      onShellCommand,
+      onShellCommand
     );
     artifactProcessor.append(generatedText);
     artifactProcessor.parse();
 
-    // Save the response
     await prismaClient.prompt.create({
       data: {
         content: generatedText,
@@ -76,21 +75,35 @@ app.post("/prompt", async (req, res) => {
       },
     });
 
+    artifactProcessor.reset();
+
     res.json({
       success: true,
       response: generatedText,
     });
-  } catch (error) {
-    console.error("Error:", error.message);
-    if (error.response) {
-      res.status(error.response.status).json({
-        error: "API request failed",
-        details: error.response.data,
-      });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error:", error.message);
+      const errWithResponse = error as {
+        response?: { status: number; data: any };
+      };
+
+      if (errWithResponse.response) {
+        res.status(errWithResponse.response.status).json({
+          error: "API request failed",
+          details: errWithResponse.response.data,
+        });
+      } else {
+        res.status(500).json({
+          error: "Internal server error",
+          details: error.message,
+        });
+      }
     } else {
+      console.error("Unknown error:", error);
       res.status(500).json({
         error: "Internal server error",
-        details: error.message,
+        details: String(error),
       });
     }
   }
