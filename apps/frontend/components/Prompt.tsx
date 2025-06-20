@@ -5,11 +5,13 @@ import { Textarea } from "./ui/textarea";
 import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { BACKEND_URL } from "@/config";
+import { BACKEND_URL, WORKER_API_URL } from "@/config";
+import { useRouter } from "next/navigation";
 
 export default function Prompt() {
   const [prompt, setPrompt] = useState("");
   const { getToken } = useAuth();
+  const router = useRouter();
 
   return (
     <div className="flex justify-center gap-4">
@@ -38,6 +40,13 @@ export default function Prompt() {
                 },
               },
             );
+
+            await axios.post(`${WORKER_API_URL}/prompt`, {
+              projectId: response.data.projectId,
+              prompt,
+            });
+
+            router.push(`/project/${response.data.projectId}`);
           }}
         >
           <Send className="size-6" />

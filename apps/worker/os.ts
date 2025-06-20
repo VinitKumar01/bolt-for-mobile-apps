@@ -1,6 +1,7 @@
 import { mkdir } from "fs/promises";
 import { dirname, join } from "path";
 import { existsSync } from "fs";
+import { prismaClient } from "db/client";
 
 const BASE_WORKER_DIR = process.env.BASE_WORKER_DIR || "/tmp/bolty-worker";
 
@@ -8,7 +9,11 @@ if (!existsSync(BASE_WORKER_DIR)) {
   await mkdir(BASE_WORKER_DIR, { recursive: true });
 }
 
-export async function onFileUpdate(filePath: string, fileContent: string) {
+export async function onFileUpdate(
+  filePath: string,
+  fileContent: string,
+  projectId: string,
+) {
   try {
     const fullPath = join(BASE_WORKER_DIR, filePath);
     const dirPath = dirname(fullPath);
@@ -19,13 +24,19 @@ export async function onFileUpdate(filePath: string, fileContent: string) {
 
     console.log(`Writing file: ${fullPath}`);
     await Bun.write(fullPath, fileContent);
+    await prismaClient.action.create({
+      data: {
+        projectId,
+        content: `Updated file ${filePath}`,
+      },
+    });
     console.log(`Successfully wrote file: ${filePath}`);
   } catch (error) {
     console.error(`Error writing file ${filePath}:`, error);
   }
 }
 
-export function onShellCommand(shellCommand: string) {
+export async function onShellCommand(shellCommand: string, projectId: string) {
   try {
     const commands = shellCommand.split("&&").map((cmd) => cmd.trim());
 
@@ -62,18 +73,23 @@ export function onShellCommand(shellCommand: string) {
         timeout: 300000,
       });
 
+      await prismaClient.action.create({
+        data: {
+          projectId,
+          content: `Ran command ${command}`,
+        },
+      });
+
       if (result.stdout) {
         console.log("Output:", result.stdout.toString());
       }
 
-      if (result.stderr) {
+      if (result.stderr && result.exitCode === 1) {
         console.error("Error:", result.stderr.toString());
       }
 
       if (result.exitCode !== 0) {
-        console.error(
-          `Command failed with exit code ${result.exitCode}: ${command}`
-        );
+        console.warn(`Command might failed: ${command}`);
 
         if (
           cmd === "npm" &&

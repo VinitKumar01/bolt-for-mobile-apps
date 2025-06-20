@@ -1,17 +1,28 @@
 export class ArtifactProcessor {
   public currentArtifact: string;
-  private onFileContent: (filePath: string, fileContent: string) => void;
-  private onShellCommand: (shellCommand: string) => void;
+  private onFileContent: (
+    filePath: string,
+    fileContent: string,
+    projectId: string,
+  ) => void;
+  private projectId: string;
+  private onShellCommand: (shellCommand: string, projectId: string) => void;
   private processedActions: Set<string> = new Set();
 
   constructor(
     currentArtifact: string,
-    onFileContent: (filePath: string, fileContent: string) => void,
-    onShellCommand: (shellCommand: string) => void
+    onFileContent: (
+      filePath: string,
+      fileContent: string,
+      projectId: string,
+    ) => void,
+    onShellCommand: (shellCommand: string, projectId: string) => void,
+    projectId: string,
   ) {
     this.currentArtifact = currentArtifact;
     this.onFileContent = onFileContent;
     this.onShellCommand = onShellCommand;
+    this.projectId = projectId;
   }
 
   append(artifact: string) {
@@ -23,14 +34,14 @@ export class ArtifactProcessor {
       let content = this.currentArtifact;
 
       const codeBlockMatch = content.match(
-        /```(?:xml|html)?\s*([\s\S]*?)\s*```/
+        /```(?:xml|html)?\s*([\s\S]*?)\s*```/,
       );
       if (codeBlockMatch) {
         content = codeBlockMatch[1] as string;
       }
 
       const artifactMatch = content.match(
-        /<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/
+        /<boltArtifact[^>]*>([\s\S]*?)<\/boltArtifact>/,
       );
       if (!artifactMatch) {
         return;
@@ -64,7 +75,7 @@ export class ArtifactProcessor {
           const shellCommand = actionContent.trim();
           if (shellCommand) {
             console.log(`Executing shell command: ${shellCommand}`);
-            this.onShellCommand(shellCommand);
+            this.onShellCommand(shellCommand, this.projectId);
             this.processedActions.add(actionId);
           }
         } else if (actionType === "file") {
@@ -74,7 +85,7 @@ export class ArtifactProcessor {
 
             if (filePath && fileContent) {
               console.log(`Creating/updating file: ${filePath}`);
-              this.onFileContent(filePath, fileContent);
+              this.onFileContent(filePath, fileContent, this.projectId);
               this.processedActions.add(actionId);
             }
           }

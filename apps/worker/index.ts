@@ -43,7 +43,7 @@ app.post("/prompt", async (req: Request, res: Response) => {
         parts: [{ text: systemPrompt }],
       },
       generationConfig: {
-        maxOutputTokens: 8000,
+        //maxOutputTokens: 8000,
         temperature: 0.7,
       },
     };
@@ -54,7 +54,7 @@ app.post("/prompt", async (req: Request, res: Response) => {
       {
         headers: { "Content-Type": "application/json" },
         timeout: 30000,
-      }
+      },
     );
 
     const generatedText = response.data.candidates[0].content.parts[0].text;
@@ -62,7 +62,8 @@ app.post("/prompt", async (req: Request, res: Response) => {
     let artifactProcessor = new ArtifactProcessor(
       "",
       onFileUpdate,
-      onShellCommand
+      onShellCommand,
+      projectId,
     );
     artifactProcessor.append(generatedText);
     artifactProcessor.parse();

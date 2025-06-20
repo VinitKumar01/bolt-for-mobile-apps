@@ -34,6 +34,32 @@ app.get("/projects", async (req, res) => {
   res.json(projects);
 });
 
+app.get("/prompts/:projectId", authMiddleware, async (req, res) => {
+  //const userId = req.userId;
+  const projectId = req.params.userId;
+
+  const prompts = await prismaClient.prompt.findMany({
+    where: {
+      projectId,
+    },
+  });
+
+  res.json({ prompts });
+});
+
+app.get("/actions/:projectId", authMiddleware, async (req, res) => {
+  //const userId = req.userId;
+  const projectId = req.params.userId;
+
+  const actions = await prismaClient.action.findMany({
+    where: {
+      projectId,
+    },
+  });
+
+  res.json({ actions });
+});
+
 app.listen(9090, () => {
   console.log("Listening on port 9090");
 });
