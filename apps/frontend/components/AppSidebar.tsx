@@ -17,6 +17,7 @@ import {
 } from "./ui/sidebar";
 import { Separator } from "./ui/separator";
 import { MessageCircleIcon } from "lucide-react";
+import Link from "next/link";
 
 interface TypeProject {
   id: string;
@@ -70,10 +71,13 @@ export default function AppSidebar() {
                 {projects.map((project) => (
                   <SidebarMenuItem key={project.id}>
                     <SidebarMenuButton asChild>
-                      <a href="#" className="w-60 truncate">
+                      <Link
+                        href={`/project/${project.id}`}
+                        className="w-60 truncate"
+                      >
                         <MessageCircleIcon />
                         <span>{project.description}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                     <Separator />
                   </SidebarMenuItem>

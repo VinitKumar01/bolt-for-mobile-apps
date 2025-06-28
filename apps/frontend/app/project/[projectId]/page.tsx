@@ -1,11 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { WORKER_URL } from "@/config";
+import { WORKER_API_URL, WORKER_URL } from "@/config";
 import useActions from "@/hooks/useActions";
 import usePrompts from "@/hooks/usePrompts";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { Send } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 
 export default function ProjectPage({
   params,
@@ -15,6 +17,8 @@ export default function ProjectPage({
   const { projectId } = React.use(params);
   const { prompts } = usePrompts(projectId);
   const { actions } = useActions(projectId);
+  const [prompt, setPrompt] = useState<string>("");
+  const { getToken } = useAuth();
 
   return (
     <div className="flex h-screen gap-2">
@@ -31,8 +35,29 @@ export default function ProjectPage({
           ))}
         </div>
         <div className="flex gap-2">
-          <Input />
-          <Button>
+          <Input
+            value={prompt}
+            onChange={(e) => {
+              setPrompt(e.target.value);
+            }}
+          />
+          <Button
+            onClick={async () => {
+              const token = await getToken();
+              axios.post(
+                `${WORKER_API_URL}/prompt`,
+                {
+                  projectId,
+                  prompt,
+                },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                },
+              );
+            }}
+          >
             <Send />
           </Button>
         </div>

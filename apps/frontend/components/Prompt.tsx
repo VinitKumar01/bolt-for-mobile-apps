@@ -41,7 +41,7 @@ export default function Prompt() {
               },
             );
 
-            await axios.post(`${WORKER_API_URL}/prompt`, {
+            axios.post(`${WORKER_API_URL}/prompt`, {
               projectId: response.data.projectId,
               prompt,
             });

@@ -13,4 +13,6 @@ USER coder
 
 EXPOSE 8080
 
+RUN mkdir -p /tmp/bolty-worker
+
 CMD [ "code-server", "--auth", "none", "--bind-addr", "0.0.0.0:8080", "/tmp/bolty-worker" ]
