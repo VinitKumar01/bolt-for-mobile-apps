@@ -27,7 +27,7 @@ export async function onFileUpdate(
     await prismaClient.action.create({
       data: {
         projectId,
-        content: `Updated file ${filePath}`,
+        content: `Updated file: ${filePath}`,
       },
     });
     console.log(`Successfully wrote file: ${filePath}`);
@@ -76,7 +76,7 @@ export async function onShellCommand(shellCommand: string, projectId: string) {
       await prismaClient.action.create({
         data: {
           projectId,
-          content: `Ran command ${command}`,
+          content: `Ran command: ${command}`,
         },
       });
 

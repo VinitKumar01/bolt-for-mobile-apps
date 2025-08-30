@@ -23,7 +23,7 @@ app.post("/project", authMiddleware, async (req, res) => {
   });
 });
 
-app.get("/projects", async (req, res) => {
+app.get("/projects", authMiddleware, async (req, res) => {
   const userId = req.userId;
 
   const projects = await prismaClient.project.findMany({
@@ -42,6 +42,7 @@ app.get("/prompts/:projectId", authMiddleware, async (req, res) => {
     where: {
       projectId,
     },
+    orderBy: { createdAt: "asc" },
   });
 
   res.json({ prompts });
