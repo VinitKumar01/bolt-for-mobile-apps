@@ -4,11 +4,18 @@ import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+export interface Action {
+  id: string;
+  content: string;
+  createdAt: string;
+}
+
 interface Prompt {
   id: string;
   content: string;
   type: "USER" | "SYSTEM";
   createdAt: string;
+  Action: Action[];
 }
 
 export default function usePrompts(projectId: string) {

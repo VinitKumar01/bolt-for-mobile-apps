@@ -59,22 +59,25 @@ app.post("/prompt", async (req: Request, res: Response) => {
 
     const generatedText = response.data.candidates[0].content.parts[0].text;
 
-    let artifactProcessor = new ArtifactProcessor(
-      "",
-      onFileUpdate,
-      onShellCommand,
-      projectId,
-    );
-    artifactProcessor.append(generatedText);
-    artifactProcessor.parse();
-
-    await prismaClient.prompt.create({
+    let createdPrompt = await prismaClient.prompt.create({
       data: {
         content: generatedText,
         projectId,
         type: "SYSTEM",
       },
     });
+
+    let promptId = createdPrompt.id;
+
+    let artifactProcessor = new ArtifactProcessor(
+      "",
+      onFileUpdate,
+      onShellCommand,
+      projectId,
+      promptId,
+    );
+    artifactProcessor.append(generatedText);
+    artifactProcessor.parse();
 
     artifactProcessor.reset();
 

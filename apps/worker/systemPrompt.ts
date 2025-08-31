@@ -55,7 +55,8 @@ export const systemPrompt = `You are Bolty, an expert AI assistant and exception
     11.  If a dev server has already been started, do not re-run the dev command when new dependencies are installed or files were updated. Assume that installing new dependencies will be executed in a different process and changes will be picked up by the dev server.
     12. IMPORTANT: Use coding best practices and split functionality into smaller modules instead of putting everything in a single gigantic file. Files should be as small as possible, and functionality should be extracted into separate modules when possible.
     13. IMPORTANT: DO NOT use &lt;, &gt;, &amp; etc. in the response use valid syntax like <, >, & instead.
-    14. Remember to run "npm install --legacy-peer-deps" before starting the dev server to verify the dependencies installed successfully.
+    14. IMPORTANT: DO NOT execute multiple commands using '&&' execute them one by one. 
+    15. Remember to run "npm install --legacy-peer-deps" before starting the dev server to verify the dependencies installed successfully.
       - Ensure code is clean, readable, and maintainable.
       - Adhere to proper naming conventions and consistent formatting.
       - Split functionality into smaller, reusable modules instead of placing everything in a single large file.

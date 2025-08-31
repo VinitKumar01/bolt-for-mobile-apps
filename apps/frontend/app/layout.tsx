@@ -6,11 +6,11 @@ import {
   SignedIn,
   SignedOut,
   SignInButton,
-  SignUpButton,
   UserButton,
 } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ModeToggle } from "@/components/ModeToggle";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,12 +40,17 @@ export default function RootLayout({
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <header className="flex justify-between items-center">
-              <div className="flex justify-between p-4">Bolty</div>
+              <Link href="/" className="flex p-4 text-2xl">
+                <div className="bg-gradient-to-b from-neutral-200 to-neutral-500 bg-clip-text text-2xl font-bold text-transparent sm:text-2xl">
+                  Bolty
+                </div>
+              </Link>
               <div className="flex justify-end items-center p-4 gap-4 h-16">
                 <ModeToggle />
                 <SignedOut>
-                  <SignInButton />
-                  <SignUpButton />
+                  <div className="p-2 border border-gray-700 rounded-md dark:bg-[#E5E5E5] bg-[#2E2E2E] dark:text-black text-white ">
+                    <SignInButton />
+                  </div>
                 </SignedOut>
                 <SignedIn>
                   <UserButton />

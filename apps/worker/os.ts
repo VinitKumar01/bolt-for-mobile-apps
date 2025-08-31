@@ -13,6 +13,7 @@ export async function onFileUpdate(
   filePath: string,
   fileContent: string,
   projectId: string,
+  promptId: string,
 ) {
   try {
     const fullPath = join(BASE_WORKER_DIR, filePath);
@@ -28,6 +29,7 @@ export async function onFileUpdate(
       data: {
         projectId,
         content: `Updated file: ${filePath}`,
+        promptId,
       },
     });
     console.log(`Successfully wrote file: ${filePath}`);
@@ -36,7 +38,11 @@ export async function onFileUpdate(
   }
 }
 
-export async function onShellCommand(shellCommand: string, projectId: string) {
+export async function onShellCommand(
+  shellCommand: string,
+  projectId: string,
+  promptId: string,
+) {
   try {
     const commands = shellCommand.split("&&").map((cmd) => cmd.trim());
 
@@ -77,6 +83,7 @@ export async function onShellCommand(shellCommand: string, projectId: string) {
         data: {
           projectId,
           content: `Ran command: ${command}`,
+          promptId,
         },
       });
 

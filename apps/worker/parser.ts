@@ -4,9 +4,15 @@ export class ArtifactProcessor {
     filePath: string,
     fileContent: string,
     projectId: string,
+    promptId: string,
   ) => void;
   private projectId: string;
-  private onShellCommand: (shellCommand: string, projectId: string) => void;
+  private promptId: string;
+  private onShellCommand: (
+    shellCommand: string,
+    projectId: string,
+    promptId: string,
+  ) => void;
   private processedActions: Set<string> = new Set();
 
   constructor(
@@ -15,14 +21,21 @@ export class ArtifactProcessor {
       filePath: string,
       fileContent: string,
       projectId: string,
+      promptId: string,
     ) => void,
-    onShellCommand: (shellCommand: string, projectId: string) => void,
+    onShellCommand: (
+      shellCommand: string,
+      projectId: string,
+      promptId: string,
+    ) => void,
     projectId: string,
+    promptId: string,
   ) {
     this.currentArtifact = currentArtifact;
     this.onFileContent = onFileContent;
     this.onShellCommand = onShellCommand;
     this.projectId = projectId;
+    this.promptId = promptId;
   }
 
   append(artifact: string) {
@@ -75,7 +88,7 @@ export class ArtifactProcessor {
           const shellCommand = actionContent.trim();
           if (shellCommand) {
             console.log(`Executing shell command: ${shellCommand}`);
-            this.onShellCommand(shellCommand, this.projectId);
+            this.onShellCommand(shellCommand, this.projectId, this.promptId);
             this.processedActions.add(actionId);
           }
         } else if (actionType === "file") {
@@ -85,7 +98,12 @@ export class ArtifactProcessor {
 
             if (filePath && fileContent) {
               console.log(`Creating/updating file: ${filePath}`);
-              this.onFileContent(filePath, fileContent, this.projectId);
+              this.onFileContent(
+                filePath,
+                fileContent,
+                this.projectId,
+                this.promptId,
+              );
               this.processedActions.add(actionId);
             }
           }
