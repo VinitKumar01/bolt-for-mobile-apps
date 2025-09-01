@@ -117,5 +117,6 @@ export class ArtifactProcessor {
   reset() {
     this.processedActions.clear();
     this.currentArtifact = "";
+    console.log("---------------Completed----------------");
   }
 }
