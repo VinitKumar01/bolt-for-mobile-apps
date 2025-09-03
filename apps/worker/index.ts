@@ -5,6 +5,7 @@ import axios from "axios";
 import { systemPrompt } from "./systemPrompt";
 import { ArtifactProcessor } from "./parser";
 import { onFileUpdate, onShellCommand } from "./os";
+import archiver from "archiver";
 
 const app = express();
 app.use(cors());
@@ -112,6 +113,21 @@ app.post("/prompt", async (req: Request, res: Response) => {
     }
   }
 });
+
+app.get("/download-all", (req, res) => {
+  const folderPath = "/tmp/bolty-worker";
+  const zipName = "source-code.zip";
+
+  res.setHeader("Content-Disposition", `attachment; filename=${zipName}`);
+  res.setHeader("Content-Type", "application/zip");
+
+  const archive = archiver("zip", { zlib: { level: 9 } });
+  archive.pipe(res);
+
+  archive.directory(folderPath, false);
+  archive.finalize();
+});
+
 app.listen(9091, () => {
   console.log(`Server listening on port 9091`);
 });

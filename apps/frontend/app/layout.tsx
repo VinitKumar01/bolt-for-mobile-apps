@@ -11,6 +11,9 @@ import {
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ModeToggle } from "@/components/ModeToggle";
 import Link from "next/link";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarAutoTrigger } from "@/components/SidebarAutoTrigger";
+import AppSidebar from "@/components/AppSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +61,10 @@ export default function RootLayout({
               </div>
             </header>
             {children}
+            <SidebarProvider defaultOpen={false}>
+              <SidebarAutoTrigger />
+              <AppSidebar />
+            </SidebarProvider>
           </ThemeProvider>
         </body>
       </html>

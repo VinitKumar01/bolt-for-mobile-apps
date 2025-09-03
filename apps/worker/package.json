@@ -14,6 +14,8 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/archiver": "^6.0.3",
+    "archiver": "^7.0.1",
     "axios": "^1.10.0"
   }
 }

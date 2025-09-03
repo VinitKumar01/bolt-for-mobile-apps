@@ -57,7 +57,7 @@ export default function AppSidebar() {
   }, [token]);
 
   return (
-    <div>
+    <div className="h-[calc(100vh-72px)]">
       <Sidebar>
         <SidebarHeader>
           <div className="text-4xl font-bold">Bolty</div>
