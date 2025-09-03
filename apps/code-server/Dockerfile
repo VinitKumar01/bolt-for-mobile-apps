@@ -6,6 +6,7 @@ RUN apt-get update \
   && apt-get install -y curl gnupg \
   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
   && apt-get install -y nodejs \
+  && npm install -g pm2 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -16,3 +17,4 @@ EXPOSE 8080
 RUN mkdir -p /tmp/bolty-worker
 
 CMD [ "code-server", "--auth", "none", "--bind-addr", "0.0.0.0:8080", "/tmp/bolty-worker" ]
+

@@ -6,6 +6,7 @@ import { systemPrompt } from "./systemPrompt";
 import { ArtifactProcessor } from "./parser";
 import { onFileUpdate, onShellCommand } from "./os";
 import archiver from "archiver";
+import { spawn } from "child_process";
 
 const app = express();
 app.use(cors());
@@ -126,6 +127,44 @@ app.get("/download-all", (req, res) => {
 
   archive.directory(folderPath, false);
   archive.finalize();
+});
+
+app.post("/run", (req, res) => {
+  const result = spawn(
+    "/usr/local/bin/docker",
+    ["exec", "code-server-update", "pm2", "delete", "expo"],
+    {
+      cwd: process.env.HOME,
+      stdio: "pipe",
+    },
+  ).on("close", () => {
+    spawn(
+      "/usr/local/bin/docker",
+      [
+        "exec",
+        "-d",
+        "code-server-update",
+        "pm2",
+        "start",
+        "npx",
+        "--name",
+        "expo",
+        "--cwd",
+        "/tmp/bolty-worker",
+        "--",
+        "expo",
+        "start",
+      ],
+      {
+        cwd: process.env.HOME,
+      },
+    );
+  });
+
+  console.log(result);
+  res.json({
+    message: result,
+  });
 });
 
 app.listen(9091, () => {
