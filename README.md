@@ -1,84 +1,119 @@
-# Turborepo starter
+# Bolt for Mobile Apps
 
-This Turborepo starter is maintained by the Turborepo core team.
+This project is a Turborepo-based monorepo that contains the following main components:
 
-## Using this example
+- `apps/frontend`: The web interface for the project.
+- `apps/primary-backend`: Handles webhooks (e.g., Clerk) and project creation/fetching.
+- `apps/worker`: Communicates with Google's Gemini API and manages the underlying code generation and docker execution.
+- `apps/code-server`: The Docker setup for running the code environment.
+- `packages`: Contains shared utilities, database schema/clients, etc.
 
-Run the following command:
+## Prerequisites
 
-```sh
-npx create-turbo@latest
+Ensure you have the following installed on your machine:
+
+- **Node.js**: >=18
+- **Bun**: This project uses `bun` as its package manager.
+- **Docker**: Required for running the code-server container used by the worker.
+- **Ngrok**: Required for exposing the local backend to receive Clerk webhooks.
+- **PostgreSQL & Redis**: You can run these locally or use cloud providers (like Neon, Supabase, Upstash, etc.).
+
+## Environment Variables Setup
+
+You need to configure the following environment variables. In each of the directories below, create a `.env` file based on `.env.example` (or just create it if missing) and populate them.
+
+### `apps/frontend/.env`
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Get this from your Clerk Dashboard under API Keys.
+- `CLERK_SECRET_KEY`: Get this from your Clerk Dashboard under API Keys.
+
+### `apps/primary-backend/.env`
+
+- `JWT_PUBLIC_KEY`: Your Clerk JWT Public Key. Go to **Clerk Dashboard -> API Keys -> Advanced -> JWT Public Key**. Make sure to include the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` wrapper.
+- `CLERK_WEBHOOK_SECRET`: Your Clerk Webhook Secret. Go to **Clerk Dashboard -> Webhooks -> Add Endpoint -> Copy Signing Secret**.
+
+### `apps/worker/.env`
+
+- `GEMINI_API_KEY`: Get this from Google AI Studio / Google Cloud console.
+
+### `packages/db/.env`
+
+- `DATABASE_URL`: Your PostgreSQL connection string.
+
+### `packages/redis/.env`
+
+- `REDIS_URL`: Your Redis connection string. (Default: `redis://localhost:6379`)
+
+## Running the Project Locally
+
+### 1. Install Dependencies
+
+Run the following command at the root of the project to install all dependencies using Bun:
+
+```bash
+bun install
 ```
 
-## What's inside?
+### 2. Database Setup
 
-This Turborepo includes the following packages/apps:
+Ensure your PostgreSQL instance is running. Then navigate to the db package to push the schema and generate the Prisma client:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```bash
+cd packages/db
+bunx prisma db push
+bunx prisma generate
+cd ../..
 ```
 
-### Develop
+### 3. Docker Setup (Code-server)
 
-To develop all apps and packages, run the following command:
+The worker requires a running Docker container named `code-server-update` to execute code.
 
+1. Navigate to the code-server directory:
+
+   ```bash
+   cd apps/code-server
+   ```
+
+2. Build the Docker image:
+
+   ```bash
+   docker build -t coder-custom .
+   ```
+
+3. Run the Docker container:
+
+   ```bash
+   docker run -d --name code-server-update -p 8080:8080 -v /tmp/bolty-worker:/tmp/bolty-worker coder-custom
+   ```
+
+   _(Note: The volume mount `/tmp/bolty-worker` is required as the worker writes to it)._
+
+### 4. Setting up Ngrok for Clerk Webhooks
+
+The `primary-backend` listens on port `9090` and handles the `/api/clerk/webhook` route to create users in the database when they sign up. To receive webhooks locally, you must expose this port:
+
+```bash
+ngrok http 9090
 ```
-cd my-turborepo
-pnpm dev
+
+Then, copy the ngrok forwarding URL (e.g., `https://<your-ngrok-id>.ngrok.app`) and add it as an endpoint in your Clerk Dashboard:
+
+- **Endpoint URL**: `https://<your-ngrok-id>.ngrok.app/api/clerk/webhook`
+- **Subscribed Events**: Make sure to subscribe to the `user.created` event!
+
+### 5. Start the Application
+
+You can run all the applications simultaneously using Turborepo from the root directory:
+
+```bash
+bun run dev
 ```
 
-### Remote Caching
+This command will concurrently start:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+- `frontend` (Next.js app, usually on port 3000)
+- `primary-backend` (Express server on port 9090)
+- `worker` (Express server on port 9091)
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+You can now visit the frontend in your browser and test the application!
